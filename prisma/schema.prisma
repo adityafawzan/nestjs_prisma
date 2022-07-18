@@ -16,11 +16,30 @@ id Int @id @default(autoincrement())
 name String @unique
 description String?
 quantity Int @default(1)
-rating Float @default(0)
+rating Decimal @default(0) @db.Decimal(10,2)
+stars Int @default(0)
 status String @default("New")
 is_wishlisted Boolean @default(false)
 is_active Boolean @default(true)
 is_deleted Boolean @default(false)
+// redeemedGifts RedeemedGift[]
 created_at DateTime @default(now())
 updated_at DateTime @updatedAt 
+}
+
+model RedeemedGift{
+  id Int @id @default(autoincrement())
+  giftId Int
+  is_rated Boolean @default(false) 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model RatedGift{
+  id Int @id @default(autoincrement())
+  giftId Int
+  redeemedGiftId Int
+  rating Decimal @default(0) @db.Decimal(10,2)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }

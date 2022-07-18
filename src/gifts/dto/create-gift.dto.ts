@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class CreateGiftDto {
   @ApiProperty()
@@ -7,9 +13,28 @@ export class CreateGiftDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ default: '-' })
   @IsString()
   description: string;
+
+  @ApiProperty({ default: 1 })
+  @IsInt()
+  @IsNotEmpty()
+  quantity: number;
+
+  @ApiProperty({ default: 0 })
+  @IsNumber()
+  @IsNotEmpty()
+  rating: number;
+
+  @ApiProperty({ default: 'New' })
+  @IsString()
+  @IsNotEmpty()
+  status: string;
+
+  @ApiProperty({ default: false })
+  @IsBoolean()
+  is_wishlisted: boolean;
 
   @ApiProperty({ default: true })
   @IsBoolean()

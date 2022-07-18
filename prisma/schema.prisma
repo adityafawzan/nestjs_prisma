@@ -15,6 +15,10 @@ model Gift {
 id Int @id @default(autoincrement())
 name String @unique
 description String?
+quantity Int @default(1)
+rating Float @default(0)
+status String @default("New")
+is_wishlisted Boolean @default(false)
 is_active Boolean @default(true)
 is_deleted Boolean @default(false)
 created_at DateTime @default(now())

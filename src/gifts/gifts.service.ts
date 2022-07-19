@@ -1,6 +1,6 @@
-import { getStars } from './../helper/hitung_bintang';
+// import { getStars } from './../helper/hitung_bintang';
 import { PrismaService } from './../prisma/prisma.service';
-import { Body, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateGiftDto } from './dto/create-gift.dto';
 import { UpdateGiftDto } from './dto/update-gift.dto';
 

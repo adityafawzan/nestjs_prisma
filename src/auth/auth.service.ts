@@ -29,7 +29,7 @@ export class AuthService {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ForbiddenException(
-            'Username ' + authSignUpDto.username + ' sudah terpakai',
+            `Username ${authSignUpDto.username} sudah terpakai`,
           );
         }
       }
@@ -47,7 +47,7 @@ export class AuthService {
 
     if (!user) {
       throw new ForbiddenException(
-        'Autentikasi Gagal, Username/Password Salah',
+        `Autentikasi Gagal, Username/Password Salah`,
       );
     }
 
@@ -58,7 +58,7 @@ export class AuthService {
 
     if (!is_matched) {
       throw new ForbiddenException(
-        'Autentikasi Gagal, Username/Password Salah',
+        `Autentikasi Gagal, Username/Password Salah`,
       );
     }
 

@@ -3,6 +3,7 @@ import { PrismaService } from './../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { CreateGiftDto } from './dto/create-gift.dto';
 import { UpdateGiftDto } from './dto/update-gift.dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 @Injectable()
 export class GiftsService {
@@ -33,12 +34,14 @@ export class GiftsService {
     try {
       return await this.prisma.gift.create({ data: createGiftDto });
     } catch (error) {
-      if (error.code === 'P2002') {
-        return (
-          'Proses gagal, Gift dengan nama : ' +
-          createGiftDto.name +
-          ' sudah ada'
-        );
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          return (
+            'Proses gagal, Gift dengan nama : ' +
+            createGiftDto.name +
+            ' sudah ada'
+          );
+        }
       }
     }
   }

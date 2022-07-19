@@ -1,4 +1,3 @@
-import { Gift } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -16,7 +15,7 @@ import { GiftEntity } from './entities/gift.entity';
 import { ApiAcceptedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('gifts')
-@ApiTags('gifts')
+@ApiTags('Gifts')
 export class GiftsController {
   constructor(private readonly giftsService: GiftsService) {}
 

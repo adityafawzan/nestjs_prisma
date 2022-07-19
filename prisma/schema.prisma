@@ -10,6 +10,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User{
+  id Int @id @default(autoincrement()) 
+  name String?
+  username String @unique
+  hashed_password String 
+  is_active Boolean @default(true)
+  is_deleted Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
 
 model Gift {
 id Int @id @default(autoincrement())

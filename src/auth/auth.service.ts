@@ -1,3 +1,4 @@
+import { IsString } from 'class-validator';
 import { prismaExclude } from './../helper/prisma_exclude';
 import { AuthSignInDto } from './dto/auth-signin.dto';
 import { ForbiddenException, Injectable } from '@nestjs/common';
@@ -5,13 +6,19 @@ import { PrismaService } from './../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { AuthSignUpDto } from './dto/auth-signup.dto';
 import * as argon from 'argon2';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
 
   // POST /signup
-  async signUp(authSignUpDto: AuthSignUpDto) {
+  async signUp(authSignUpDto: AuthSignUpDto): Promise<any> {
     const password = authSignUpDto.password;
     const hashed_password = await argon.hash(password);
     try {
@@ -24,7 +31,7 @@ export class AuthService {
         select: prismaExclude.$exclude('user', ['hashed_password']),
       });
 
-      return user;
+      return this.signToken(user.id, user.username);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -38,7 +45,7 @@ export class AuthService {
   }
 
   // POST /login
-  async signIn(authSignInDto: AuthSignInDto) {
+  async signIn(authSignInDto: AuthSignInDto): Promise<any> {
     const user = await this.prisma.user.findUnique({
       where: {
         username: authSignInDto.username,
@@ -62,13 +69,44 @@ export class AuthService {
       );
     }
 
-    const res = await this.prisma.user.findUnique({
-      where: {
-        username: authSignInDto.username,
-      },
-      select: prismaExclude.$exclude('user', ['hashed_password']),
+    return this.signToken(user.id, user.username);
+  }
+
+  // async validasiUser(username: string, password: string): Promise<any> {
+  //   try {
+  //     const user = await this.prisma.user.findUnique({
+  //       where: { username },
+  //     });
+
+  //     if (!user) {
+  //       throw new ForbiddenException(`Username/password salah`);
+  //     }
+
+  //     const is_matched = await argon.verify(user.hashed_password, password);
+
+  //     if (!is_matched) {
+  //       throw new ForbiddenException(`Username/password salah`);
+  //     }
+
+  //     delete user.hashed_password;
+  //     return user;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
+  async signToken(
+    userId: number,
+    username: string,
+  ): Promise<{ access_token: string }> {
+    const payload = { sub: userId, username };
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '16m',
+      secret: this.config.get('JWT_SECRET'),
     });
 
-    return res;
+    return {
+      access_token: token,
+    };
   }
 }

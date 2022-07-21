@@ -1,4 +1,4 @@
-import { AuthSignUpDto } from './../auth/dto/auth-signup.dto';
+import { AuthRegisterDto } from '../auth/dto/auth-register.dto';
 import { PrismaService } from './../prisma/prisma.service';
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,9 +15,9 @@ export class UsersService {
   ) {}
 
   // POST /users
-  async create(authSignUpDto: AuthSignUpDto) {
+  async create(authSignUpDto: AuthRegisterDto) {
     try {
-      return await this.authService.signUp(authSignUpDto);
+      return await this.authService.register(authSignUpDto);
     } catch (error) {
       throw error;
     }

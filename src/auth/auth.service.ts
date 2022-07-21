@@ -3,10 +3,9 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { AuthSignUpDto } from './dto/auth-signup.dto';
-import { AuthSignInDto } from './dto/auth-signin.dto';
+import { AuthRegisterDto } from './dto/auth-register.dto';
+import { AuthLoginDto } from './dto/auth-login.dto';
 import { PrismaService } from './../prisma/prisma.service';
-import { prismaExclude } from './../helper/prisma_exclude';
 import * as argon from 'argon2';
 
 @Injectable()
@@ -17,27 +16,33 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  // POST /signup
-  async signUp(authSignUpDto: AuthSignUpDto): Promise<any> {
-    const hashed_password = await argon.hash(authSignUpDto.password);
+  // POST /register
+  async register(dto: AuthRegisterDto): Promise<any> {
+    const { name, username, password } = dto;
+    const hashed_password = await argon.hash(password);
 
     try {
       const user = await this.prisma.user.create({
         data: {
-          name: authSignUpDto.name,
-          username: authSignUpDto.username,
-          hashed_password: hashed_password,
+          name,
+          username,
+          hashed_password,
         },
-        select: prismaExclude.$exclude('user', ['hashed_password']),
+        select: {
+          id: true,
+          username: true,
+        },
       });
 
-      return this.signToken(user.id, user.username);
+      return {
+        msg: 'Registrasi user berhasil',
+        user_id: user.id,
+        user_name: user.username,
+      };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException(
-            `Username ${authSignUpDto.username} sudah terpakai`,
-          );
+          throw new ForbiddenException(`Username ${username} sudah terpakai`);
         }
       }
 
@@ -46,31 +51,27 @@ export class AuthService {
   }
 
   // POST /login
-  async signIn(authSignInDto: AuthSignInDto): Promise<any> {
+  async login(dto: AuthLoginDto): Promise<any> {
+    const { username, password } = dto;
+    let is_matched = false;
+
     const user = await this.prisma.user.findUnique({
       where: {
-        username: authSignInDto.username,
+        username,
       },
     });
 
-    if (!user) {
+    if (user) {
+      is_matched = await argon.verify(user.hashed_password, password);
+    }
+
+    if (!user || !is_matched) {
       throw new ForbiddenException(
         `Autentikasi Gagal, Username/Password Salah`,
       );
     }
 
-    const is_matched = await argon.verify(
-      user.hashed_password,
-      authSignInDto.password,
-    );
-
-    if (!is_matched) {
-      throw new ForbiddenException(
-        `Autentikasi Gagal, Username/Password Salah`,
-      );
-    }
-
-    return this.signToken(user.id, user.username);
+    return user;
   }
 
   async signToken(

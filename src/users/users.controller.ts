@@ -7,45 +7,56 @@ import {
   Param,
   Delete,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { AuthSignUpDto } from './../auth/dto/auth-signup.dto';
+import { AuthRegisterDto } from '../auth/dto/auth-register.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
-import { JwtAuthGuard } from './../auth/guard/jwt-auth.guard';
+import { SessionAuthGuard } from './../auth/guard/session-auth.guard';
 
 @Controller('users')
 @ApiTags('Users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(SessionAuthGuard)
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @ApiAcceptedResponse({ type: UserEntity })
-  create(@Body() authSignUpDto: AuthSignUpDto) {
-    return this.usersService.create(authSignUpDto);
+  create(@Body() dto: AuthRegisterDto) {
+    return this.usersService.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Get()
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserEntity, isArray: true })
   findAll() {
     return this.usersService.findAll();
   }
 
+  @UseGuards(SessionAuthGuard)
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserEntity, isArray: true })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
+  @UseGuards(SessionAuthGuard)
   @Patch(':id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserEntity })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(+id, dto);
   }
 
+  @UseGuards(SessionAuthGuard)
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserEntity })
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);

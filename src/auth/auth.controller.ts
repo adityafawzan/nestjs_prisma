@@ -1,24 +1,41 @@
 // checked
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { AuthSignInDto } from './dto/auth-signin.dto';
-import { AuthSignUpDto } from './dto/auth-signup.dto';
+import { AuthRegisterDto } from './dto/auth-register.dto';
+import { LocalAuthGuard } from './guard/local-auth.guard';
+import { SessionAuthGuard } from './guard/session-auth.guard';
 
 @Controller()
 @ApiTags('Autentikasi')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // POST /signup
-  @Post('signup')
-  async signUp(@Body() authSignUpDto: AuthSignUpDto) {
-    return await this.authService.signUp(authSignUpDto);
+  // POST /register
+  @Post('register')
+  async register(@Body() dto: AuthRegisterDto) {
+    return await this.authService.register(dto);
   }
 
   // POST /login
+  @UseGuards(LocalAuthGuard)
   @Post('login')
-  async signIn(@Body() authSignInDto: AuthSignInDto) {
-    return await this.authService.signIn(authSignInDto);
+  login(@Request() req): any {
+    return { User: req.user, msg: 'Berhasil login' };
+  }
+
+  // GET /logout
+  @UseGuards(SessionAuthGuard)
+  @Get('logout')
+  logout(@Request() req): any {
+    req.session.destroy();
+    return { msg: 'Berhasil logout' };
   }
 }

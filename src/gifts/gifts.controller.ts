@@ -8,11 +8,11 @@ import {
   Delete,
   Put,
 } from '@nestjs/common';
+import { ApiAcceptedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GiftsService } from './gifts.service';
 import { CreateGiftDto } from './dto/create-gift.dto';
 import { UpdateGiftDto } from './dto/update-gift.dto';
 import { GiftEntity } from './entities/gift.entity';
-import { ApiAcceptedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('gifts')
 @ApiTags('Gifts')
@@ -69,9 +69,9 @@ export class GiftsController {
   }
 
   // POST /gifts/id/rating
-  @Post(':id/rating')
+  @Post(':id/rating/:rate')
   @ApiAcceptedResponse({ type: GiftEntity })
-  rating(@Param('id') redeemedGiftId: string, @Body('rating') rating: number) {
-    return this.giftsService.rating(+redeemedGiftId, rating);
+  rating(@Param('id') redeemedGiftId: string, @Param('rate') rating: string) {
+    return this.giftsService.rating(+redeemedGiftId, parseFloat(rating));
   }
 }

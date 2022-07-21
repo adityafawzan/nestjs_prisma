@@ -1,6 +1,9 @@
-// import { getStars } from './../helper/hitung_bintang';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from './../prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
 import { CreateGiftDto } from './dto/create-gift.dto';
 import { UpdateGiftDto } from './dto/update-gift.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
@@ -13,17 +16,20 @@ export class GiftsService {
   async findAll() {
     try {
       return await this.prisma.gift.findMany();
-      // return await this.prisma.$queryRaw`SELECT * FROM Gift;`; RAW QUERY
     } catch (error) {
       throw error;
     }
   }
 
-  // GET /gifts/id
+  // GET /gifts/{id}
   async findOne(id: number) {
     try {
-      return await this.prisma.gift.findUnique({ where: { id } });
-      // return await this.prisma.$queryRaw`SELECT * FROM Gift WHERE id = ${id};`; RAW QUERY
+      const gift = await this.prisma.gift.findUnique({ where: { id } });
+      if (!gift) {
+        throw new NotFoundException(`Gift dengan id: ${id} tidak ditemukan`);
+      }
+
+      return gift;
     } catch (error) {
       throw error;
     }
@@ -153,20 +159,16 @@ export class GiftsService {
       const avg_rating = aggregate._avg.rating;
       // hitung average rating gift
 
-      const avg_stars = await this.getStars(avg_rating);
+      const avg_stars = Math.round(avg_rating * 2) / 2;
 
       // update data rating gift
       await this.prisma.gift.update({
         where: { id: giftId },
-        data: { rating: avg_rating, stars: 4 },
+        data: { rating: avg_rating, stars: avg_stars },
       });
       // update data rating gift
 
       return `Berhasil me-rating Redeemed Gift dengan ID : ${redeemedGiftId}`;
     } catch (error) {}
-  }
-
-  async getStars(rating: any) {
-    return rating;
   }
 }

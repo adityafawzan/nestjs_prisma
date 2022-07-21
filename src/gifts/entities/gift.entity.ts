@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Gift } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime';
 
 export class GiftEntity implements Gift {
   @ApiProperty()
@@ -16,7 +15,7 @@ export class GiftEntity implements Gift {
   quantity: number;
 
   @ApiProperty({ default: 0 })
-  rating: Decimal;
+  rating: number;
 
   @ApiProperty()
   stars: number;

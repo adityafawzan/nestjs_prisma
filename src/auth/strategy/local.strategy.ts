@@ -1,13 +1,9 @@
-import {
-  ConsoleLogger,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+// checked
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-local';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { AuthService } from 'src/auth/auth.service';
-import { AuthSignInDto } from './../dto/auth-signin.dto';
+import { Strategy } from 'passport-local';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {

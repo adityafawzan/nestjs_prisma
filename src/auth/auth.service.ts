@@ -1,13 +1,13 @@
-import { IsString } from 'class-validator';
-import { prismaExclude } from './../helper/prisma_exclude';
-import { AuthSignInDto } from './dto/auth-signin.dto';
+// checked
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { PrismaService } from './../prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { AuthSignUpDto } from './dto/auth-signup.dto';
-import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { AuthSignUpDto } from './dto/auth-signup.dto';
+import { AuthSignInDto } from './dto/auth-signin.dto';
+import { PrismaService } from './../prisma/prisma.service';
+import { prismaExclude } from './../helper/prisma_exclude';
+import * as argon from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -19,8 +19,8 @@ export class AuthService {
 
   // POST /signup
   async signUp(authSignUpDto: AuthSignUpDto): Promise<any> {
-    const password = authSignUpDto.password;
-    const hashed_password = await argon.hash(password);
+    const hashed_password = await argon.hash(authSignUpDto.password);
+
     try {
       const user = await this.prisma.user.create({
         data: {
@@ -40,6 +40,7 @@ export class AuthService {
           );
         }
       }
+
       throw error;
     }
   }
@@ -72,38 +73,17 @@ export class AuthService {
     return this.signToken(user.id, user.username);
   }
 
-  // async validasiUser(username: string, password: string): Promise<any> {
-  //   try {
-  //     const user = await this.prisma.user.findUnique({
-  //       where: { username },
-  //     });
-
-  //     if (!user) {
-  //       throw new ForbiddenException(`Username/password salah`);
-  //     }
-
-  //     const is_matched = await argon.verify(user.hashed_password, password);
-
-  //     if (!is_matched) {
-  //       throw new ForbiddenException(`Username/password salah`);
-  //     }
-
-  //     delete user.hashed_password;
-  //     return user;
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
   async signToken(
     userId: number,
     username: string,
   ): Promise<{ access_token: string }> {
-    const payload = { sub: userId, username };
-    const token = await this.jwt.signAsync(payload, {
-      expiresIn: '16m',
-      secret: this.config.get('JWT_SECRET'),
-    });
+    const token = await this.jwt.signAsync(
+      { sub: userId, username }, //payload
+      {
+        expiresIn: this.config.get('JWT_EXPIRATION'),
+        secret: this.config.get('JWT_SECRET'),
+      },
+    );
 
     return {
       access_token: token,

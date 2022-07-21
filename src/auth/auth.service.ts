@@ -1,6 +1,6 @@
 // checked
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { AuthRegisterDto } from './dto/auth-register.dto';
@@ -10,15 +10,10 @@ import * as argon from 'argon2';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-    private config: ConfigService,
-  ) {}
+  constructor(private prisma: PrismaService, private config: ConfigService) {}
 
-  // POST /register
   async register(dto: AuthRegisterDto): Promise<any> {
-    const { name, username, password } = dto;
+    const { name, username, password, role } = dto;
     const hashed_password = await argon.hash(password);
 
     try {
@@ -27,6 +22,7 @@ export class AuthService {
           name,
           username,
           hashed_password,
+          role,
         },
         select: {
           id: true,
@@ -35,14 +31,23 @@ export class AuthService {
       });
 
       return {
-        msg: 'Registrasi user berhasil',
-        user_id: user.id,
-        user_name: user.username,
+        status: HttpStatus.OK,
+        success: true,
+        message: 'Registrasi berhasil',
+        data: {
+          user_id: user.id,
+          user_name: user.username,
+        },
       };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException(`Username ${username} sudah terpakai`);
+          throw new ForbiddenException({
+            status: HttpStatus.FORBIDDEN,
+            success: false,
+            message: `Username ${username} sudah terpakai`,
+            data: {},
+          });
         }
       }
 
@@ -50,7 +55,6 @@ export class AuthService {
     }
   }
 
-  // POST /login
   async login(dto: AuthLoginDto): Promise<any> {
     const { username, password } = dto;
     let is_matched = false;
@@ -66,28 +70,9 @@ export class AuthService {
     }
 
     if (!user || !is_matched) {
-      throw new ForbiddenException(
-        `Autentikasi Gagal, Username/Password Salah`,
-      );
+      return null;
     }
 
     return user;
-  }
-
-  async signToken(
-    userId: number,
-    username: string,
-  ): Promise<{ access_token: string }> {
-    const token = await this.jwt.signAsync(
-      { sub: userId, username }, //payload
-      {
-        expiresIn: this.config.get('JWT_EXPIRATION'),
-        secret: this.config.get('JWT_SECRET'),
-      },
-    );
-
-    return {
-      access_token: token,
-    };
   }
 }

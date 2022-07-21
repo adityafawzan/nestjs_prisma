@@ -15,6 +15,7 @@ model User{
   name String?
   username String @unique
   hashed_password String 
+  role String @default("common")
   is_active Boolean @default(true)
   is_deleted Boolean @default(false)
   created_at DateTime @default(now())

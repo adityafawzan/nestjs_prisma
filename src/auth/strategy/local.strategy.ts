@@ -1,7 +1,6 @@
 // checked
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { AuthService } from 'src/auth/auth.service';
 import { Strategy } from 'passport-local';
 
@@ -15,15 +14,24 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     try {
       const user = await this.authService.login({ username, password });
       if (!user) {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException({
+          status: HttpStatus.UNAUTHORIZED,
+          success: false,
+          message: 'Username atau password salah',
+          data: {},
+        });
       }
 
-      return user;
+      return {
+        status: HttpStatus.OK,
+        success: true,
+        message: 'Login berhasil',
+        data: {
+          user_id: user.id,
+          user_name: user.username,
+        },
+      };
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        return error;
-      }
-
       throw error;
     }
   }

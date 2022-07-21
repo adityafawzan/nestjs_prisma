@@ -1,3 +1,4 @@
+// checked
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 
@@ -13,6 +14,9 @@ export class UserEntity implements User {
 
   @ApiProperty()
   hashed_password: string;
+
+  @ApiProperty()
+  role: string;
 
   @ApiProperty({ default: true })
   is_active: boolean;

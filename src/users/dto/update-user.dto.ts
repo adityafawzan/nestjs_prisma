@@ -1,3 +1,4 @@
+// checked
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
@@ -18,6 +19,7 @@ export class UpdateUserDto {
   password: string;
 
   @ApiProperty()
-  @IsBoolean()
-  is_active: boolean;
+  @IsNotEmpty()
+  @IsString()
+  role: string;
 }

@@ -4,6 +4,7 @@ CREATE TABLE `User` (
     `name` VARCHAR(191) NULL,
     `username` VARCHAR(191) NOT NULL,
     `hashed_password` VARCHAR(191) NOT NULL,
+    `role` VARCHAR(191) NOT NULL DEFAULT 'common',
     `is_active` BOOLEAN NOT NULL DEFAULT true,
     `is_deleted` BOOLEAN NOT NULL DEFAULT false,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

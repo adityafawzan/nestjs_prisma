@@ -1,3 +1,4 @@
+// checked
 import { AuthRegisterDto } from '../../auth/dto/auth-register.dto';
 import { PartialType } from '@nestjs/swagger';
 

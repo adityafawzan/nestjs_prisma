@@ -12,7 +12,6 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 export class GiftsService {
   constructor(private prisma: PrismaService) {}
 
-  // GET /gifts
   async findAll() {
     try {
       return await this.prisma.gift.findMany();
@@ -21,7 +20,6 @@ export class GiftsService {
     }
   }
 
-  // GET /gifts/{id}
   async findOne(id: number) {
     try {
       const gift = await this.prisma.gift.findUnique({ where: { id } });
@@ -35,24 +33,21 @@ export class GiftsService {
     }
   }
 
-  // POST /gifts
-  async create(createGiftDto: CreateGiftDto) {
+  async create(dto: CreateGiftDto) {
+    const { name } = dto;
     try {
-      return await this.prisma.gift.create({ data: createGiftDto });
+      return await this.prisma.gift.create({ data: dto });
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          return (
-            'Proses gagal, Gift dengan nama : ' +
-            createGiftDto.name +
-            ' sudah ada'
+          throw new ForbiddenException(
+            `Proses gagal, Gift dengan nama : ${name} sudah ada`,
           );
         }
       }
     }
   }
 
-  // PUT /gifts/id
   async put(id: number, updateGiftDto: UpdateGiftDto) {
     try {
       return await this.prisma.gift.update({
@@ -64,7 +59,6 @@ export class GiftsService {
     }
   }
 
-  // PATCH /gifts/id
   async patch(id: number, updateGiftDto: UpdateGiftDto) {
     const { name } = updateGiftDto;
     try {
@@ -75,19 +69,16 @@ export class GiftsService {
     } catch (error) {}
   }
 
-  // DELETE /gifts/id
   async remove(id: number) {
     try {
       return await this.prisma.gift.delete({
         where: { id },
       });
-      // return await this.prisma.$executeRaw`DELETE FROM Gift WHERE id = ${id};`; RAW QUERY
     } catch (error) {
       throw error;
     }
   }
 
-  // POST /gifts/id/redeem
   async redeem(id: number) {
     try {
       const res = await this.findOne(id);
@@ -114,7 +105,6 @@ export class GiftsService {
     }
   }
 
-  // POST /gifts/id/rating
   async rating(redeemedGiftId: number, rating: number) {
     try {
       const res = await this.prisma.redeemedGift.findUnique({
